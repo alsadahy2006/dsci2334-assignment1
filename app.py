@@ -1,47 +1,44 @@
+import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
-import streamlit as st
 
-st.set_page_config(page_title="Admissions Explorer", page_icon="🎓")
-st.title("🎓 Graduate Admissions Explorer")
-st.write("Explore how test scores and CGPA relate to the chance of admission.")
-
+st.set_page_config(page_title="Qahwa Corner Dashboard", page_icon="☕")
+st.title("☕ Qahwa Corner Sales Dashboard")
+st.write("Explore sales performance across branches and products for Qahwa Corner.")
 
 @st.cache_data
 def load_data():
-    df = pd.read_csv("Admission_Predict_Ver1.1.csv")
-    df.columns = df.columns.str.strip()  # some column names end with a space
+    df = pd.read_csv("cafe_sales.csv")
+    df.columns = df.columns.str.strip()
+    df['date'] = pd.to_datetime(df['date'])
     return df
-
 
 df = load_data()
 
-# Sidebar filters
+# Sidebar branch selector
 st.sidebar.header("Filters")
-min_cgpa = st.sidebar.slider("Minimum CGPA", 6.5, 10.0, 8.0, 0.1)
-research = st.sidebar.selectbox("Research experience", ["All", "Yes", "No"])
+branches = df['branch'].unique()
+selected_branch = st.sidebar.selectbox("Select Branch", branches)
 
-view = df[df["CGPA"] >= min_cgpa]
-if research != "All":
-    view = view[view["Research"] == (1 if research == "Yes" else 0)]
+# Filter data
+filtered_df = df[df['branch'] == selected_branch]
 
-# Key numbers
-c1, c2, c3 = st.columns(3)
-c1.metric("Students", len(view))
-if len(view) > 0:
-    c2.metric("Average CGPA", f"{view['CGPA'].mean():.2f}")
-    c3.metric("Average chance", f"{view['Chance of Admit'].mean():.0%}")
-else:
-    st.warning("No students match these filters. Lower the minimum CGPA.")
+# Key metrics
+c1, c2 = st.columns(2)
+c1.metric("Total Orders", len(filtered_df))
+total_revenue = filtered_df['total_sar'].sum()
+c2.metric("Total Revenue", f"{total_revenue:,.2f} SAR")
 
-# Chart
+# Bar chart of revenue by product
+st.subheader(f"Revenue by Product for {selected_branch}")
+product_revenue = filtered_df.groupby('product_name')['total_sar'].sum()
+
 fig, ax = plt.subplots()
-ax.scatter(view["GRE Score"], view["Chance of Admit"], alpha=0.6)
-ax.set_xlabel("GRE Score")
-ax.set_ylabel("Chance of Admit")
-ax.set_title("GRE Score vs Chance of Admit")
+product_revenue.plot(kind='bar', ax=ax, color='saddlebrown')
+ax.set_ylabel("Revenue (SAR)")
+ax.set_xlabel("Product")
 st.pyplot(fig)
 
 # Data table
-st.subheader("First 20 matching students")
-st.dataframe(view.head(20))
+st.subheader("Recent Orders")
+st.dataframe(filtered_df.head(20))
