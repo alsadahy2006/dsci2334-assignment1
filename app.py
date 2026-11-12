@@ -30,7 +30,7 @@ total_revenue = filtered_df['total_sar'].sum()
 c2.metric("Total Revenue", f"{total_revenue:,.2f} SAR")
 
 # Bar chart of revenue by product
-st.subheader(f"Revenue by Product for {selected_branch}")
+st.subheader(f"Revenue by Product for {seproduct_revenue = filtered_df.groupby("product")["total_sar"].sum()lected_branch}")
 product_revenue = filtered_df.groupby('product_name')['total_sar'].sum()
 
 fig, ax = plt.subplots()
