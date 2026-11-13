@@ -15,30 +15,26 @@ def load_data():
 
 df = load_data()
 
-# Sidebar branch selector
 st.sidebar.header("Filters")
 branches = df['branch'].unique()
 selected_branch = st.sidebar.selectbox("Select Branch", branches)
 
-# Filter data
 filtered_df = df[df['branch'] == selected_branch]
 
-# Key metrics
 c1, c2 = st.columns(2)
 c1.metric("Total Orders", len(filtered_df))
 total_revenue = filtered_df['total_sar'].sum()
 c2.metric("Total Revenue", f"{total_revenue:,.2f} SAR")
 
-# Bar chart of revenue by product
 st.subheader(f"Revenue by Product for {selected_branch}")
-product_revenue = filtered_df.groupby('product')['total_sar'].sum()
+revenue_by_product = filtered_df.groupby('product')['total_sar'].sum()
 
-fig, ax = plt.subplots()
-product_revenue.plot(kind='bar', ax=ax, color='saddlebrown')
+fig, ax = plt.subplots(figsize=(8, 4))
+revenue_by_product.plot(kind='bar', ax=ax, color='saddlebrown')
 ax.set_ylabel("Revenue (SAR)")
 ax.set_xlabel("Product")
+plt.xticks(rotation=45, ha='right')
 st.pyplot(fig)
 
-# Data table
 st.subheader("Recent Orders")
 st.dataframe(filtered_df.head(20))
